@@ -1,43 +1,37 @@
 import {
   Controller,
   Post,
-  Req,
-  Res,
   UseInterceptors,
   UploadedFile,
+  HttpStatus,
 } from '@nestjs/common';
-import { VetService } from './vet.service';
+import { VetaService } from './vetaCloud.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Response } from 'express';
+
 @Controller('vet')
-export class VetController {
-  constructor(private vetService: VetService) {}
+export class VetaController {
+  constructor(private vetService: VetaService) {}
 
   @Post('/test')
   @UseInterceptors(FileInterceptor('file'))
-  async upload(
-    @Req() request: Request,
-    @Res() res: Response,
-    @UploadedFile() file,
-  ): Promise<any> {
+  async upload(@UploadedFile() file): Promise<any> {
     try {
       const data = await this.vetService.postFile(file);
 
       if (!data) {
-        throw new Error(`Could not upload`);
+        throw new Error('Could not upload');
       }
-
-      return res.status(201).json({
-        status: 201,
+      return {
+        status: HttpStatus.CREATED,
         success: true,
         message: data,
-      });
+      };
     } catch (error) {
-      return res.status(500).send({
-        status: 500,
+      return {
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
         success: false,
         message: 'Something went wrong',
-      });
+      };
     }
   }
 }
